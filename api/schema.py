@@ -1,7 +1,8 @@
 import graphene
 from graphene_django import DjangoObjectType
 from .models import Director, Movie
-
+import graphql_jwt
+from graphql_jwt.decorators import login_required   
 
 #object type for model director
 class DirectorType(DjangoObjectType):
@@ -27,6 +28,7 @@ class Query(graphene.ObjectType):
     director_detail = graphene.Field(DirectorType,id=graphene.Int())
 
     #for fetch all movies in db
+    @login_required
     def resolve_all_movies(self,info, **kwargs):
         return Movie.objects.all()
 
@@ -101,6 +103,11 @@ class DirectorDeleteMutation(graphene.Mutation):
 
 #‘class Mutation’ defines our mutations and sends parameters such as updating and creating data to the model.
 class Mutation:
+
+    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.Verify.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
+
     create_director = DirectorCreateMutation.Field()
     update_director = DirectorUpdateMutation.Field()
-    delete_director = DirectorDeleteMutation.Field()
+    delete_director = DirectorDeleteMutation.Field()    
